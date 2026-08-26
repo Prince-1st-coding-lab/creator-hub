@@ -155,6 +155,39 @@ export type Database = {
         }
         Relationships: []
       }
+      tips: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          image_url: string
+          position: number
+          title: string
+          updated_at: string
+          visible: boolean
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          position?: number
+          title: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          position?: number
+          title?: string
+          updated_at?: string
+          visible?: boolean
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
