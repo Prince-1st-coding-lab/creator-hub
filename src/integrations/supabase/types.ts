@@ -19,11 +19,14 @@ export type Database = {
           available: boolean
           created_at: string
           description: string
+          details: string
+          gallery: string[]
           id: string
           image_url: string
           name: string
           position: number
           price: string
+          slug: string
           updated_at: string
           visible: boolean
         }
@@ -31,11 +34,14 @@ export type Database = {
           available?: boolean
           created_at?: string
           description?: string
+          details?: string
+          gallery?: string[]
           id?: string
           image_url?: string
           name: string
           position?: number
           price?: string
+          slug?: string
           updated_at?: string
           visible?: boolean
         }
@@ -43,11 +49,14 @@ export type Database = {
           available?: boolean
           created_at?: string
           description?: string
+          details?: string
+          gallery?: string[]
           id?: string
           image_url?: string
           name?: string
           position?: number
           price?: string
+          slug?: string
           updated_at?: string
           visible?: boolean
         }
