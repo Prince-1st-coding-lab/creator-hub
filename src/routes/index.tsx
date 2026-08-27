@@ -73,21 +73,22 @@ function Index() {
               {settings.hero_description}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
+              <Link
+                to="/shop"
+                className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-medium text-soil transition-transform hover:-translate-y-0.5"
+              >
+                <ArrowRight className="h-4 w-4" />
+                Shop
+              </Link>
               <ContactMenu settings={settings}>
                 <button
                   type="button"
-                  className="inline-flex items-center gap-2 rounded-full bg-gold px-6 py-3 text-sm font-medium text-soil transition-transform hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-2 rounded-full border border-secondary/40 px-6 py-3 text-sm font-medium text-secondary transition-colors hover:bg-secondary/10"
                 >
                   <MessageCircle className="h-4 w-4" />
                   Contact Us
                 </button>
               </ContactMenu>
-              <a
-                href={settings.hero_cta_href}
-                className="inline-flex items-center rounded-full border border-secondary/40 px-6 py-3 text-sm font-medium text-secondary transition-colors hover:bg-secondary/10"
-              >
-                {settings.hero_cta_label}
-              </a>
             </div>
           </div>
         </div>
