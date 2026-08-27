@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { ContactMenu } from "@/components/site/ContactMenu";
+import { ImageLightbox, useLightbox } from "@/components/site/ImageLightbox";
 import { servicesQuery, settingsQuery, type Service } from "@/lib/site-data";
 
 const serviceQuery = (slug: string) =>
