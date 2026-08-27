@@ -364,15 +364,20 @@ function GalleryField({
           You can select several photos at once. They appear on the product page gallery.
         </p>
       </div>
-      <textarea
-        rows={2}
-        className={input}
-        placeholder="Or paste image addresses, one per line"
-        value={value.join("\n")}
-        onChange={(e) =>
-          onChange(e.target.value.split("\n").map((x) => x.trim()).filter(Boolean))
-        }
-      />
+      <details className="mt-2">
+        <summary className="cursor-pointer text-xs text-muted-foreground">
+          Paste image addresses instead
+        </summary>
+        <textarea
+          rows={2}
+          className={input}
+          placeholder="One image address per line"
+          value={value.join("\n")}
+          onChange={(e) =>
+            onChange(e.target.value.split("\n").map((x) => x.trim()).filter(Boolean))
+          }
+        />
+      </details>
     </div>
   );
 }
