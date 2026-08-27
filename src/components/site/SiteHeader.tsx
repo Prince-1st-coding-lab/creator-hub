@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { MessageCircle } from "lucide-react";
-import { ContactMenu } from "./ContactMenu";
+import { ArrowRight } from "lucide-react";
 import { LOGO_SRC, type SiteSettings } from "@/lib/site-data";
 
 export function SiteHeader({ settings }: { settings: SiteSettings }) {
@@ -11,9 +10,9 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
           <img
             src={LOGO_SRC}
             alt="G Modern Creativity Ltd logo"
-            width={44}
-            height={44}
-            className="h-11 w-11 shrink-0 rounded-full bg-card object-contain ring-1 ring-border"
+            width={56}
+            height={56}
+            className="h-14 w-14 shrink-0 rounded-full bg-card object-cover ring-1 ring-border"
           />
           <span className="min-w-0 leading-tight">
             <span className="block font-display text-sm font-semibold tracking-tight text-foreground sm:text-base">
@@ -32,15 +31,13 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
             Shop
           </Link>
         </nav>
-        <ContactMenu settings={settings}>
-          <button
-            type="button"
-            className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            <MessageCircle className="h-4 w-4" />
-            Contact Us
-          </button>
-        </ContactMenu>
+        <Link
+          to="/shop"
+          className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          Shop
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </header>
   );
