@@ -1,7 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight } from "lucide-react";
 import { LOGO_SRC, type SiteSettings } from "@/lib/site-data";
-import { ContactMenu } from "@/components/site/ContactMenu";
 
 export function SiteHeader({ settings }: { settings: SiteSettings }) {
   return (
