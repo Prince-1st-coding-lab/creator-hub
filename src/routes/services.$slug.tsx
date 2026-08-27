@@ -153,17 +153,33 @@ function ServicePage() {
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {gallery.map((src, i) => (
-            <img
+            <button
               key={`${src}-${i}`}
-              src={src}
-              alt={`${service.name} work example`}
-              loading="lazy"
-              width={1200}
-              height={912}
-              className="h-56 w-full rounded-xl object-cover shadow-[var(--shadow-soft)]"
-            />
+              type="button"
+              onClick={() => lightbox.open(i)}
+              aria-label={`Open image ${i + 1} of ${service.name}`}
+              className="overflow-hidden rounded-xl shadow-[var(--shadow-soft)]"
+            >
+              <img
+                src={src}
+                alt={`${service.name} work example`}
+                loading="lazy"
+                width={1200}
+                height={912}
+                className="h-56 w-full object-cover transition-transform duration-300 hover:scale-105"
+              />
+            </button>
           ))}
         </div>
+
+        <ImageLightbox
+          images={gallery}
+          index={lightbox.index}
+          alt={`${service.name} work example`}
+          onClose={lightbox.close}
+          onNext={lightbox.next}
+          onPrev={lightbox.prev}
+        />
 
         <div className="mt-14">
           <h2 className="text-2xl">Our other services</h2>
