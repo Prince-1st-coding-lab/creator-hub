@@ -99,8 +99,10 @@ function Index() {
         <div className="rule-gold mt-5 max-w-xs" />
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((s) => (
-            <article
+            <Link
               key={s.id}
+              to="/services/$slug"
+              params={{ slug: s.slug }}
               className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)] transition-transform hover:-translate-y-1"
             >
               <img
@@ -114,15 +116,8 @@ function Index() {
               <div className="flex flex-1 flex-col p-6">
                 <h3 className="text-xl">{s.name}</h3>
                 <p className="mt-2 flex-1 text-muted-foreground">{s.short_description}</p>
-                <Link
-                  to="/services/$slug"
-                  params={{ slug: s.slug }}
-                  className="mt-5 inline-flex items-center gap-2 self-start rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                >
-                  View service <ArrowRight className="h-4 w-4" />
-                </Link>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
       </section>

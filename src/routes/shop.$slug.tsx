@@ -4,6 +4,7 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
+import { ImageLightbox, useLightbox } from "@/components/site/ImageLightbox";
 import {
   productQuery,
   productsQuery,
@@ -59,8 +60,12 @@ function ProductPage() {
   const { data: services } = useSuspenseQuery(servicesQuery);
   const { data: products } = useSuspenseQuery(productsQuery);
 
+  const gallery = product
+    ? [product.image_url, ...(product.gallery ?? [])].filter(Boolean)
+    : [];
+  const lightbox = useLightbox(gallery.length);
+
   if (!product) return null;
-  const gallery = [product.image_url, ...(product.gallery ?? [])].filter(Boolean);
   const others = products.filter((p) => p.slug !== product.slug).slice(0, 6);
 
   return (
@@ -77,28 +82,50 @@ function ProductPage() {
 
         <div className="mt-6 grid gap-10 lg:grid-cols-[1.3fr_1fr]">
           <div>
-            <img
-              src={gallery[0]}
-              alt={product.name}
-              width={1200}
-              height={912}
-              className="h-72 w-full rounded-2xl object-cover shadow-[var(--shadow-soft)] sm:h-96"
-            />
+            <button
+              type="button"
+              onClick={() => lightbox.open(0)}
+              aria-label={`Open ${product.name} photo`}
+              className="block w-full overflow-hidden rounded-2xl shadow-[var(--shadow-soft)]"
+            >
+              <img
+                src={gallery[0]}
+                alt={product.name}
+                width={1200}
+                height={912}
+                className="h-72 w-full object-cover sm:h-96"
+              />
+            </button>
             {gallery.length > 1 ? (
               <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
                 {gallery.slice(1).map((src, i) => (
-                  <img
+                  <button
                     key={`${src}-${i}`}
-                    src={src}
-                    alt={`${product.name} photo ${i + 2}`}
-                    loading="lazy"
-                    width={1200}
-                    height={912}
-                    className="h-32 w-full rounded-xl object-cover sm:h-40"
-                  />
+                    type="button"
+                    onClick={() => lightbox.open(i + 1)}
+                    aria-label={`Open ${product.name} photo ${i + 2}`}
+                    className="overflow-hidden rounded-xl"
+                  >
+                    <img
+                      src={src}
+                      alt={`${product.name} photo ${i + 2}`}
+                      loading="lazy"
+                      width={1200}
+                      height={912}
+                      className="h-32 w-full object-cover transition-transform duration-300 hover:scale-105 sm:h-40"
+                    />
+                  </button>
                 ))}
               </div>
             ) : null}
+            <ImageLightbox
+              images={gallery}
+              index={lightbox.index}
+              alt={product.name}
+              onClose={lightbox.close}
+              onNext={lightbox.next}
+              onPrev={lightbox.prev}
+            />
           </div>
 
           <div>

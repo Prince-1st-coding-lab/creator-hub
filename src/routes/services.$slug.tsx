@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { ContactMenu } from "@/components/site/ContactMenu";
+import { ImageLightbox, useLightbox } from "@/components/site/ImageLightbox";
 import { servicesQuery, settingsQuery, type Service } from "@/lib/site-data";
 
 const serviceQuery = (slug: string) =>
@@ -87,8 +88,14 @@ function ServicePage() {
   const { data: settings } = useSuspenseQuery(settingsQuery);
   const { data: services } = useSuspenseQuery(servicesQuery);
 
+  const gallery = service
+    ? service.gallery?.length
+      ? service.gallery
+      : [service.image_url]
+    : [];
+  const lightbox = useLightbox(gallery.length);
+
   if (!service) return null;
-  const gallery = service.gallery?.length ? service.gallery : [service.image_url];
 
   return (
     <div className="min-h-screen bg-background">
@@ -153,17 +160,33 @@ function ServicePage() {
 
         <div className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {gallery.map((src, i) => (
-            <img
+            <button
               key={`${src}-${i}`}
-              src={src}
-              alt={`${service.name} work example`}
-              loading="lazy"
-              width={1200}
-              height={912}
-              className="h-56 w-full rounded-xl object-cover shadow-[var(--shadow-soft)]"
-            />
+              type="button"
+              onClick={() => lightbox.open(i)}
+              aria-label={`Open image ${i + 1} of ${service.name}`}
+              className="overflow-hidden rounded-xl shadow-[var(--shadow-soft)]"
+            >
+              <img
+                src={src}
+                alt={`${service.name} work example`}
+                loading="lazy"
+                width={1200}
+                height={912}
+                className="h-56 w-full object-cover transition-transform duration-300 hover:scale-105"
+              />
+            </button>
           ))}
         </div>
+
+        <ImageLightbox
+          images={gallery}
+          index={lightbox.index}
+          alt={`${service.name} work example`}
+          onClose={lightbox.close}
+          onNext={lightbox.next}
+          onPrev={lightbox.prev}
+        />
 
         <div className="mt-14">
           <h2 className="text-2xl">Our other services</h2>
