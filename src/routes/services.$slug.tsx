@@ -88,8 +88,14 @@ function ServicePage() {
   const { data: settings } = useSuspenseQuery(settingsQuery);
   const { data: services } = useSuspenseQuery(servicesQuery);
 
+  const gallery = service
+    ? service.gallery?.length
+      ? service.gallery
+      : [service.image_url]
+    : [];
+  const lightbox = useLightbox(gallery.length);
+
   if (!service) return null;
-  const gallery = service.gallery?.length ? service.gallery : [service.image_url];
 
   return (
     <div className="min-h-screen bg-background">
