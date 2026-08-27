@@ -23,18 +23,18 @@ export function ContactMenu({
 
   const options = [
     {
-      icon: Phone,
-      label: "Call us",
-      value: settings.phone,
-      href: `tel:+${digits(settings.phone)}`,
-      external: false,
-    },
-    {
       icon: MessageCircle,
       label: "WhatsApp",
       value: settings.whatsapp,
       href: whatsappLink(settings.whatsapp, message),
       external: true,
+    },
+    {
+      icon: Phone,
+      label: "Call us",
+      value: settings.phone,
+      href: `tel:+${digits(settings.phone)}`,
+      external: false,
     },
     {
       icon: Mail,
