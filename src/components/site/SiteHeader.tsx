@@ -30,23 +30,6 @@ export function SiteHeader({ settings }: { settings: SiteSettings }) {
             Shop
           </Link>
         </nav>
-        <div className="flex shrink-0 items-center gap-2">
-          <ContactMenu settings={settings} message="Hello, I'd like to ask about your services">
-            <button
-              type="button"
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-            >
-              Contact us
-            </button>
-          </ContactMenu>
-          <Link
-            to="/shop"
-            className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-          >
-            Shop
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
       </div>
     </header>
   );
