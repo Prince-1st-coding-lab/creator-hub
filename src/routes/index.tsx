@@ -111,20 +111,13 @@ function Index() {
               key={s.id}
               to="/services/$slug"
               params={{ slug: s.slug }}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)] transition-transform hover:-translate-y-1"
+              className="group flex flex-col justify-center rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-soft)] transition-transform hover:-translate-y-1"
             >
-              <img
-                src={s.image_url}
-                alt={s.name}
-                loading="lazy"
-                width={1200}
-                height={912}
-                className="h-52 w-full object-cover"
-              />
-              <div className="flex flex-1 flex-col p-6">
-                <h3 className="text-xl">{s.name}</h3>
-                <p className="mt-2 flex-1 text-muted-foreground">{s.short_description}</p>
-              </div>
+              <h3 className="text-xl">{s.name}</h3>
+              <p className="mt-2 text-muted-foreground">{s.short_description}</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-leaf group-hover:gap-2 transition-all">
+                Read more <ArrowRight className="h-4 w-4" />
+              </span>
             </Link>
           ))}
         </div>
