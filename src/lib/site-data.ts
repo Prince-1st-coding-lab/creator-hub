@@ -147,3 +147,17 @@ export const productQuery = (slug: string) =>
       return data;
     },
   });
+
+export const productByIdQuery = (id: string) =>
+  queryOptions({
+    queryKey: ["product-by-id", id],
+    queryFn: async (): Promise<Product | null> => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
