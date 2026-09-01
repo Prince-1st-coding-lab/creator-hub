@@ -1,16 +1,21 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ArrowLeft, MessageCircle } from "lucide-react";
+import { useState } from "react";
 
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { ImageLightbox, useLightbox } from "@/components/site/ImageLightbox";
 import {
+  childProductsQuery,
+  placementLabel,
+  productByIdQuery,
   productQuery,
   productsQuery,
   servicesQuery,
   settingsQuery,
   whatsappLink,
+  type Product,
 } from "@/lib/site-data";
 
 export const Route = createFileRoute("/shop/$slug")({
@@ -22,6 +27,12 @@ export const Route = createFileRoute("/shop/$slug")({
       context.queryClient.ensureQueryData(productsQuery),
     ]);
     if (!product) throw notFound();
+    await Promise.all([
+      context.queryClient.ensureQueryData(childProductsQuery(product.id)),
+      product.parent_id
+        ? context.queryClient.ensureQueryData(productByIdQuery(product.parent_id))
+        : Promise.resolve(null),
+    ]);
     return {
       name: product.name,
       description: product.description,
@@ -56,29 +67,43 @@ export const Route = createFileRoute("/shop/$slug")({
 function ProductPage() {
   const { slug } = Route.useParams();
   const { data: product } = useSuspenseQuery(productQuery(slug));
+
+  if (!product) return null;
+  return <ProductBody key={product.id} product={product} />;
+}
+
+function ProductBody({ product }: { product: Product }) {
   const { data: settings } = useSuspenseQuery(settingsQuery);
   const { data: services } = useSuspenseQuery(servicesQuery);
   const { data: products } = useSuspenseQuery(productsQuery);
+  const { data: children } = useSuspenseQuery(childProductsQuery(product.id));
 
-  const gallery = product
-    ? [product.image_url, ...(product.gallery ?? [])].filter(Boolean)
-    : [];
+  const gallery = [product.image_url, ...(product.gallery ?? [])].filter(Boolean);
   const lightbox = useLightbox(gallery.length);
-
-  if (!product) return null;
   const others = products.filter((p) => p.slug !== product.slug).slice(0, 6);
+
+  if (children.length) {
+    return (
+      <CategoryView
+        product={product}
+        children={children}
+        settings={settings}
+        services={services}
+      />
+    );
+  }
+
+  const placement = placementLabel(product.placement);
+  const orderMessage = `Hello G Modern Creativity, I would like to order: ${product.name}${
+    product.size ? ` (${product.size})` : ""
+  }`;
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader settings={settings} />
 
       <section className="mx-auto max-w-6xl px-5 py-12">
-        <Link
-          to="/shop"
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to shop
-        </Link>
+        <ParentLink parentId={product.parent_id} />
 
         <div className="mt-6 grid gap-10 lg:grid-cols-[1.3fr_1fr]">
           <div>
@@ -137,6 +162,30 @@ function ProductPage() {
             {product.description ? (
               <p className="mt-4 text-muted-foreground">{product.description}</p>
             ) : null}
+
+            {product.size || product.material || placement ? (
+              <dl className="mt-6 divide-y divide-border rounded-2xl border border-border text-sm">
+                {product.size ? (
+                  <div className="flex justify-between gap-4 px-4 py-3">
+                    <dt className="text-muted-foreground">Size</dt>
+                    <dd className="text-right">{product.size}</dd>
+                  </div>
+                ) : null}
+                {product.material ? (
+                  <div className="flex justify-between gap-4 px-4 py-3">
+                    <dt className="text-muted-foreground">Type</dt>
+                    <dd className="text-right">{product.material}</dd>
+                  </div>
+                ) : null}
+                {placement ? (
+                  <div className="flex justify-between gap-4 px-4 py-3">
+                    <dt className="text-muted-foreground">Best for</dt>
+                    <dd className="text-right">{placement}</dd>
+                  </div>
+                ) : null}
+              </dl>
+            ) : null}
+
             {product.details ? (
               <p className="mt-4 whitespace-pre-line text-sm text-muted-foreground">
                 {product.details}
@@ -146,10 +195,7 @@ function ProductPage() {
               {product.available ? "Available" : "Currently out of stock"}
             </p>
             <a
-              href={whatsappLink(
-                settings.whatsapp,
-                `Hello G Modern Creativity, I would like to order: ${product.name}`,
-              )}
+              href={whatsappLink(settings.whatsapp, orderMessage)}
               target="_blank"
               rel="noreferrer"
               className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
@@ -181,7 +227,7 @@ function ProductPage() {
                     loading="lazy"
                     width={1200}
                     height={912}
-                    className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-28"
+                    className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   <p className="px-2 py-2 text-xs">{p.name}</p>
                 </Link>
@@ -189,6 +235,206 @@ function ProductPage() {
             </div>
           </div>
         ) : null}
+      </section>
+
+      <SiteFooter settings={settings} services={services} />
+    </div>
+  );
+}
+
+function ParentLink({ parentId }: { parentId: string | null }) {
+  const { data: parent } = useSuspenseQuery(productByIdQuery(parentId ?? ""));
+  if (parentId && parent) {
+    return (
+      <Link
+        to="/shop/$slug"
+        params={{ slug: parent.slug }}
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to {parent.name.toLowerCase()}
+      </Link>
+    );
+  }
+  return (
+    <Link
+      to="/shop"
+      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+    >
+      <ArrowLeft className="h-4 w-4" /> Back to shop
+    </Link>
+  );
+}
+
+function CategoryView({
+  product,
+  children,
+  settings,
+  services,
+}: {
+  product: Product;
+  children: Product[];
+  settings: Parameters<typeof SiteHeader>[0]["settings"];
+  services: Parameters<typeof SiteFooter>[0]["services"];
+}) {
+  const [place, setPlace] = useState("all");
+  const [material, setMaterial] = useState("all");
+
+  const materials = Array.from(
+    new Set(children.map((c) => c.material.trim()).filter(Boolean)),
+  ).sort();
+  const hasPlacement = children.some((c) => c.placement);
+
+  const shown = children.filter((c) => {
+    const placeOk =
+      place === "all" || c.placement === place || (c.placement === "both" && place !== "all");
+    const materialOk = material === "all" || c.material.trim() === material;
+    return placeOk && materialOk;
+  });
+
+  const chip = (active: boolean) =>
+    `rounded-full border px-4 py-2 text-sm transition-colors ${
+      active
+        ? "border-primary bg-primary text-primary-foreground"
+        : "border-border hover:bg-muted"
+    }`;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <SiteHeader settings={settings} />
+
+      <section className="mx-auto max-w-6xl px-5 py-12">
+        <Link
+          to="/shop"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back to shop
+        </Link>
+
+        <h1 className="mt-6 text-4xl sm:text-5xl">{product.name}</h1>
+        <div className="rule-gold mt-5 max-w-xs" />
+        {product.description ? (
+          <p className="mt-5 max-w-2xl text-muted-foreground">{product.description}</p>
+        ) : null}
+        {product.details ? (
+          <p className="mt-3 max-w-2xl whitespace-pre-line text-sm text-muted-foreground">
+            {product.details}
+          </p>
+        ) : null}
+
+        {hasPlacement || materials.length ? (
+          <div className="mt-8 space-y-3">
+            {hasPlacement ? (
+              <div className="flex flex-wrap gap-2">
+                <button type="button" className={chip(place === "all")} onClick={() => setPlace("all")}>
+                  All
+                </button>
+                <button
+                  type="button"
+                  className={chip(place === "indoor")}
+                  onClick={() => setPlace("indoor")}
+                >
+                  Indoor
+                </button>
+                <button
+                  type="button"
+                  className={chip(place === "outdoor")}
+                  onClick={() => setPlace("outdoor")}
+                >
+                  Outdoor
+                </button>
+              </div>
+            ) : null}
+            {materials.length ? (
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className={chip(material === "all")}
+                  onClick={() => setMaterial("all")}
+                >
+                  All types
+                </button>
+                {materials.map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className={chip(material === m)}
+                    onClick={() => setMaterial(m)}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {shown.map((c) => (
+            <Link
+              key={c.id}
+              to="/shop/$slug"
+              params={{ slug: c.slug }}
+              className="group overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)]"
+            >
+              <img
+                src={c.image_url}
+                alt={c.name}
+                loading="lazy"
+                width={1200}
+                height={912}
+                className="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="text-xl">{c.name}</h2>
+                  {c.price ? (
+                    <span className="shrink-0 font-display text-base text-leaf">{c.price}</span>
+                  ) : null}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  {c.size ? (
+                    <span className="rounded-full bg-muted px-3 py-1">{c.size}</span>
+                  ) : null}
+                  {c.material ? (
+                    <span className="rounded-full bg-muted px-3 py-1">{c.material}</span>
+                  ) : null}
+                  {placementLabel(c.placement) ? (
+                    <span className="rounded-full bg-muted px-3 py-1">
+                      {placementLabel(c.placement)}
+                    </span>
+                  ) : null}
+                </div>
+                {c.description ? (
+                  <p className="mt-3 text-sm text-muted-foreground">{c.description}</p>
+                ) : null}
+                <span className="mt-4 inline-block text-sm text-primary">View details</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+
+        {!shown.length ? (
+          <p className="mt-10 text-muted-foreground">
+            Nothing matches those filters yet. Try another option.
+          </p>
+        ) : null}
+
+        <div className="mt-14 rounded-2xl border border-border bg-muted/40 p-8 text-sm text-muted-foreground">
+          <p>{settings.delivery_text}</p>
+          <p className="mt-2">{settings.location_text}</p>
+          <a
+            href={whatsappLink(
+              settings.whatsapp,
+              `Hello G Modern Creativity, I would like help choosing ${product.name.toLowerCase()}`,
+            )}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Ask us which one fits
+          </a>
+        </div>
       </section>
 
       <SiteFooter settings={settings} services={services} />
