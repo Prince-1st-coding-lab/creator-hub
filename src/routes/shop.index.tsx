@@ -84,6 +84,8 @@ function ShopPage() {
   const { data: settings } = useSuspenseQuery(settingsQuery);
   const { data: products } = useSuspenseQuery(productsQuery);
   const { data: services } = useSuspenseQuery(servicesQuery);
+  const { data: childCounts } = useSuspenseQuery(childCountsQuery);
+
 
   return (
     <div className="min-h-screen bg-background">
