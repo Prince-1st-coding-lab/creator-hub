@@ -5,7 +5,13 @@ import { MessageCircle } from "lucide-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { ContactMenu } from "@/components/site/ContactMenu";
-import { productsQuery, servicesQuery, settingsQuery, whatsappLink } from "@/lib/site-data";
+import {
+  childCountsQuery,
+  productsQuery,
+  servicesQuery,
+  settingsQuery,
+  whatsappLink,
+} from "@/lib/site-data";
 
 export const Route = createFileRoute("/shop/")({
   loader: async ({ context }) => {
@@ -13,9 +19,11 @@ export const Route = createFileRoute("/shop/")({
       context.queryClient.ensureQueryData(settingsQuery),
       context.queryClient.ensureQueryData(productsQuery),
       context.queryClient.ensureQueryData(servicesQuery),
+      context.queryClient.ensureQueryData(childCountsQuery),
     ]);
     return { products };
   },
+
   head: ({ loaderData }) => ({
     meta: [
       { title: "Shop | Pots, Vases, Flowers & Stands — G Modern Creativity Ltd" },
