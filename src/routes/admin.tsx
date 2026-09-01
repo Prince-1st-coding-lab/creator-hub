@@ -588,8 +588,13 @@ function ProductsPanel() {
         available: p.available,
         visible: p.visible,
         position: p.position,
+        parent_id: p.parent_id,
+        size: p.size,
+        material: p.material,
+        placement: p.placement,
       })
       .eq("id", p.id);
+
     if (error) { toast.error(error.message); return; }
     refresh();
     toast.success("Product saved");
@@ -631,6 +636,49 @@ function ProductsPanel() {
             value={p.slug}
             onChange={(v) => update(p.id, { slug: v })}
           />
+          <label className="block text-sm">
+            <span className="font-medium">Belongs to</span>
+            <select
+              className={input}
+              value={p.parent_id ?? ""}
+              onChange={(e) => update(p.id, { parent_id: e.target.value || null })}
+            >
+              <option value="">Own item in the shop</option>
+              {items
+                .filter((o) => o.id !== p.id && !o.parent_id)
+                .map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.name}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field
+              label="Size / measurement (e.g. 30cm x 25cm)"
+              value={p.size}
+              onChange={(v) => update(p.id, { size: v })}
+            />
+            <Field
+              label="Type / material (e.g. Clay, Ceramic)"
+              value={p.material}
+              onChange={(v) => update(p.id, { material: v })}
+            />
+          </div>
+          <label className="block text-sm">
+            <span className="font-medium">Best for</span>
+            <select
+              className={input}
+              value={p.placement}
+              onChange={(e) => update(p.id, { placement: e.target.value })}
+            >
+              <option value="">Not specified</option>
+              <option value="indoor">Indoor</option>
+              <option value="outdoor">Outdoor</option>
+              <option value="both">Indoor &amp; outdoor</option>
+            </select>
+          </label>
+
           <Field
             label="Description"
             textarea
