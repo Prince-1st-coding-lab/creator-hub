@@ -243,18 +243,7 @@ function ProductBody({ product }: { product: Product }) {
 }
 
 function ParentLink({ parentId }: { parentId: string | null }) {
-  const { data: parent } = useSuspenseQuery(productByIdQuery(parentId ?? ""));
-  if (parentId && parent) {
-    return (
-      <Link
-        to="/shop/$slug"
-        params={{ slug: parent.slug }}
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" /> Back to {parent.name.toLowerCase()}
-      </Link>
-    );
-  }
+  if (parentId) return <ParentCategoryLink parentId={parentId} />;
   return (
     <Link
       to="/shop"
@@ -264,6 +253,30 @@ function ParentLink({ parentId }: { parentId: string | null }) {
     </Link>
   );
 }
+
+function ParentCategoryLink({ parentId }: { parentId: string }) {
+  const { data: parent } = useSuspenseQuery(productByIdQuery(parentId));
+  if (!parent) {
+    return (
+      <Link
+        to="/shop"
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="h-4 w-4" /> Back to shop
+      </Link>
+    );
+  }
+  return (
+    <Link
+      to="/shop/$slug"
+      params={{ slug: parent.slug }}
+      className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+    >
+      <ArrowLeft className="h-4 w-4" /> Back to {parent.name.toLowerCase()}
+    </Link>
+  );
+}
+
 
 function CategoryView({
   product,
