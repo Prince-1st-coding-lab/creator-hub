@@ -588,8 +588,13 @@ function ProductsPanel() {
         available: p.available,
         visible: p.visible,
         position: p.position,
+        parent_id: p.parent_id,
+        size: p.size,
+        material: p.material,
+        placement: p.placement,
       })
       .eq("id", p.id);
+
     if (error) { toast.error(error.message); return; }
     refresh();
     toast.success("Product saved");
