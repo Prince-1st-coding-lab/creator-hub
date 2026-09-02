@@ -231,4 +231,33 @@ function ProductPage() {
           onClose={() => setOpenItem(null)}
         />
 
+        {others.length ? (
+          <div className="mt-16">
+            <h2 className="text-2xl">More from the shop</h2>
+            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+              {others.map((p) => (
+                <Link
+                  key={p.id}
+                  to="/shop/$slug"
+                  params={{ slug: p.slug }}
+                  className="group overflow-hidden rounded-xl border border-border bg-card"
+                >
+                  <img
+                    src={p.image_url}
+                    alt={p.name}
+                    loading="lazy"
+                    className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-28"
+                  />
+                  <p className="px-2 py-2 text-xs">{p.name}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </section>
+
+      <SiteFooter settings={settings} services={services} />
+    </div>
+  );
 }
+
