@@ -62,13 +62,56 @@ function ProductPage() {
   const { data: services } = useSuspenseQuery(servicesQuery);
   const { data: products } = useSuspenseQuery(productsQuery);
 
-  const gallery = product
-    ? [product.image_url, ...(product.gallery ?? [])].filter(Boolean)
-    : [];
-  const lightbox = useLightbox(gallery.length);
+  const [filter, setFilter] = useState<string | null>(null);
+  const [openItem, setOpenItem] = useState<QuickViewItem | null>(null);
+
+  const items = useMemo<QuickViewItem[]>(() => {
+    if (!product) return [];
+    const children = products.filter((p) => p.parent_id === product.id);
+    if (children.length) {
+      return children.map((c) => ({
+        name: c.name,
+        price: c.price,
+        description: c.description,
+        size: c.size,
+        material: c.material,
+        placement: c.placement,
+        available: c.available,
+        slug: c.slug,
+        images: [c.image_url, ...(c.gallery ?? [])].filter(Boolean),
+      }));
+    }
+    const gallery = [product.image_url, ...(product.gallery ?? [])].filter(Boolean);
+    return gallery.map((src, i) => ({
+      name: gallery.length > 1 ? `${product.name} ${i + 1}` : product.name,
+      price: product.price,
+      description: product.description,
+      size: product.size,
+      material: product.material,
+      placement: product.placement,
+      available: product.available,
+      slug: null,
+      images: [src],
+    }));
+  }, [product, products]);
+
+  const chips = useMemo(() => {
+    const values = new Set<string>();
+    items.forEach((i) => {
+      if (i.placement) values.add(i.placement);
+      if (i.material) values.add(i.material);
+    });
+    return Array.from(values);
+  }, [items]);
+
+  const shown = filter
+    ? items.filter((i) => i.placement === filter || i.material === filter)
+    : items;
 
   if (!product) return null;
-  const others = products.filter((p) => p.slug !== product.slug).slice(0, 6);
+  const others = products
+    .filter((p) => p.slug !== product.slug && !p.parent_id)
+    .slice(0, 6);
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,118 +125,110 @@ function ProductPage() {
           <ArrowLeft className="h-4 w-4" /> Back to shop
         </Link>
 
-        <div className="mt-6 grid gap-10 lg:grid-cols-[1.3fr_1fr]">
-          <div>
-            <button
-              type="button"
-              onClick={() => lightbox.open(0)}
-              aria-label={`Open ${product.name} photo`}
-              className="block w-full overflow-hidden rounded-2xl shadow-[var(--shadow-soft)]"
-            >
-              <img
-                src={gallery[0]}
-                alt={product.name}
-                width={1200}
-                height={912}
-                className="h-72 w-full object-cover sm:h-96"
-              />
-            </button>
-            {gallery.length > 1 ? (
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-                {gallery.slice(1).map((src, i) => (
-                  <button
-                    key={`${src}-${i}`}
-                    type="button"
-                    onClick={() => lightbox.open(i + 1)}
-                    aria-label={`Open ${product.name} photo ${i + 2}`}
-                    className="overflow-hidden rounded-xl"
-                  >
-                    <img
-                      src={src}
-                      alt={`${product.name} photo ${i + 2}`}
-                      loading="lazy"
-                      width={1200}
-                      height={912}
-                      className="h-32 w-full object-cover transition-transform duration-300 hover:scale-105 sm:h-40"
-                    />
-                  </button>
-                ))}
-              </div>
-            ) : null}
-            <ImageLightbox
-              images={gallery}
-              index={lightbox.index}
-              alt={product.name}
-              onClose={lightbox.close}
-              onNext={lightbox.next}
-              onPrev={lightbox.prev}
-            />
-          </div>
-
-          <div>
-            <h1 className="text-3xl sm:text-4xl">{product.name}</h1>
-            <div className="rule-gold mt-4 max-w-[8rem]" />
-            {product.price ? (
-              <p className="mt-4 font-display text-xl text-leaf">{product.price}</p>
-            ) : null}
-            {product.description ? (
-              <p className="mt-4 text-muted-foreground">{product.description}</p>
-            ) : null}
-            {product.details ? (
-              <p className="mt-4 whitespace-pre-line text-sm text-muted-foreground">
-                {product.details}
-              </p>
-            ) : null}
-            <p className="mt-4 text-xs text-muted-foreground">
-              {product.available ? "Available" : "Currently out of stock"}
+        <div className="mt-6 max-w-2xl">
+          <h1 className="text-3xl sm:text-4xl">{product.name}</h1>
+          <div className="rule-gold mt-4 max-w-[8rem]" />
+          {product.price ? (
+            <p className="mt-4 font-display text-xl text-leaf">{product.price}</p>
+          ) : null}
+          {product.description ? (
+            <p className="mt-4 text-muted-foreground">{product.description}</p>
+          ) : null}
+          {product.details ? (
+            <p className="mt-4 whitespace-pre-line text-sm text-muted-foreground">
+              {product.details}
             </p>
-            <a
-              href={whatsappLink(
-                settings.whatsapp,
-                `Hello G Modern Creativity, I would like to order: ${product.name}`,
-              )}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              <MessageCircle className="h-4 w-4" />
-              Make Your Order
-            </a>
-            <div className="mt-8 rounded-2xl border border-border bg-muted/40 p-5 text-sm text-muted-foreground">
-              <p>{settings.delivery_text}</p>
-              <p className="mt-2">{settings.location_text}</p>
-            </div>
-          </div>
+          ) : null}
         </div>
 
-        {others.length ? (
-          <div className="mt-16">
-            <h2 className="text-2xl">More from the shop</h2>
-            <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-              {others.map((p) => (
-                <Link
-                  key={p.id}
-                  to="/shop/$slug"
-                  params={{ slug: p.slug }}
-                  className="group overflow-hidden rounded-xl border border-border bg-card"
-                >
-                  <img
-                    src={p.image_url}
-                    alt={p.name}
-                    loading="lazy"
-                    width={1200}
-                    height={912}
-                    className="h-24 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-28"
-                  />
-                  <p className="px-2 py-2 text-xs">{p.name}</p>
-                </Link>
-              ))}
-            </div>
+        {chips.length ? (
+          <div className="mt-8 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => setFilter(null)}
+              aria-pressed={filter === null}
+              className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                filter === null
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border hover:bg-muted"
+              }`}
+            >
+              All
+            </button>
+            {chips.map((c) => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setFilter(c)}
+                aria-pressed={filter === c}
+                className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                  filter === c
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border hover:bg-muted"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
           </div>
         ) : null}
-      </section>
 
-      <SiteFooter settings={settings} services={services} />
-    </div>
-  );
+        <p className="mt-5 text-sm text-muted-foreground">
+          Showing {shown.length} of {items.length}
+        </p>
+
+        {shown.length ? (
+          <div className="mt-6 columns-2 gap-4 md:columns-3 lg:columns-4 [&>*]:mb-4">
+            {shown.map((item, i) => (
+              <button
+                key={`${item.name}-${i}`}
+                type="button"
+                onClick={() => setOpenItem(item)}
+                aria-label={`Open details for ${item.name}`}
+                className="group relative block w-full break-inside-avoid overflow-hidden rounded-2xl border border-border text-left shadow-[var(--shadow-soft)]"
+              >
+                <img
+                  src={item.images[0]}
+                  alt={`${item.name} — ${product.name} from G Modern Creativity Ltd`}
+                  loading="lazy"
+                  className="h-64 w-full object-cover transition-transform duration-300 group-hover:scale-105 sm:h-72"
+                />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-soil/90 via-soil/40 to-transparent p-4 pt-10 transition-transform duration-300 group-hover:-translate-y-1">
+                  <p className="truncate text-sm font-medium text-secondary">{item.name}</p>
+                  {item.price ? (
+                    <p className="mt-0.5 font-display text-sm text-secondary/85">{item.price}</p>
+                  ) : null}
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="mt-6 rounded-2xl border border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+            Nothing matches that filter yet. Try another option.
+          </p>
+        )}
+
+        <div className="mt-12 rounded-2xl border border-border bg-muted/40 p-6 text-sm text-muted-foreground">
+          <p>{settings.delivery_text}</p>
+          <p className="mt-2">{settings.location_text}</p>
+          <a
+            href={whatsappLink(
+              settings.whatsapp,
+              `Hello G Modern Creativity, I would like to order: ${product.name}`,
+            )}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <MessageCircle className="h-4 w-4" />
+            Make Your Order
+          </a>
+        </div>
+
+        <ProductQuickView
+          item={openItem}
+          whatsapp={settings.whatsapp}
+          onClose={() => setOpenItem(null)}
+        />
+
 }
