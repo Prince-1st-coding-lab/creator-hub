@@ -585,6 +585,10 @@ function ProductsPanel() {
         gallery: p.gallery,
         price: p.price,
         image_url: p.image_url,
+        size: p.size,
+        material: p.material,
+        placement: p.placement,
+        parent_id: p.parent_id,
         available: p.available,
         visible: p.visible,
         position: p.position,
@@ -659,6 +663,42 @@ function ProductsPanel() {
             value={p.details}
             onChange={(v) => update(p.id, { details: v })}
           />
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field
+              label="Size (e.g. 30cm tall)"
+              value={p.size ?? ""}
+              onChange={(v) => update(p.id, { size: v })}
+            />
+            <Field
+              label="Type / material (e.g. Ceramic)"
+              value={p.material ?? ""}
+              onChange={(v) => update(p.id, { material: v })}
+            />
+            <Field
+              label="Best for (e.g. Indoor)"
+              value={p.placement ?? ""}
+              onChange={(v) => update(p.id, { placement: v })}
+            />
+          </div>
+
+          <label className="block text-sm">
+            <span className="font-medium">Belongs to category</span>
+            <select
+              className={input}
+              value={p.parent_id ?? ""}
+              onChange={(e) => update(p.id, { parent_id: e.target.value || null })}
+            >
+              <option value="">Top-level category (shows in shop)</option>
+              {items
+                .filter((c) => c.id !== p.id && !c.parent_id)
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+            </select>
+          </label>
           <div className="flex flex-wrap items-center gap-6">
             <label className="text-sm">
               <span className="font-medium">Position</span>
