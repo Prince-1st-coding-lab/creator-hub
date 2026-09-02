@@ -5,13 +5,7 @@ import { MessageCircle } from "lucide-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { ContactMenu } from "@/components/site/ContactMenu";
-import {
-  childCountsQuery,
-  productsQuery,
-  servicesQuery,
-  settingsQuery,
-  whatsappLink,
-} from "@/lib/site-data";
+import { productsQuery, servicesQuery, settingsQuery, whatsappLink } from "@/lib/site-data";
 
 export const Route = createFileRoute("/shop/")({
   loader: async ({ context }) => {
@@ -19,11 +13,9 @@ export const Route = createFileRoute("/shop/")({
       context.queryClient.ensureQueryData(settingsQuery),
       context.queryClient.ensureQueryData(productsQuery),
       context.queryClient.ensureQueryData(servicesQuery),
-      context.queryClient.ensureQueryData(childCountsQuery),
     ]);
     return { products };
   },
-
   head: ({ loaderData }) => ({
     meta: [
       { title: "Shop | Pots, Vases, Flowers & Stands — G Modern Creativity Ltd" },
@@ -84,8 +76,6 @@ function ShopPage() {
   const { data: settings } = useSuspenseQuery(settingsQuery);
   const { data: products } = useSuspenseQuery(productsQuery);
   const { data: services } = useSuspenseQuery(servicesQuery);
-  const { data: childCounts } = useSuspenseQuery(childCountsQuery);
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,82 +90,62 @@ function ShopPage() {
         </p>
 
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {products.map((p) => {
-            const options = childCounts[p.id] ?? 0;
-            return (
-              <article
-                key={p.id}
-                className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)]"
-              >
-                <Link to="/shop/$slug" params={{ slug: p.slug }} className="block">
-                  <img
-                    src={p.image_url}
-                    alt={p.name}
-                    loading="lazy"
-                    width={1200}
-                    height={912}
-                    className="h-56 w-full object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </Link>
-                <div className="p-6">
-                  <div className="flex items-start justify-between gap-3">
-                    <h2 className="text-xl">
-                      <Link to="/shop/$slug" params={{ slug: p.slug }} className="hover:underline">
-                        {p.name}
-                      </Link>
-                    </h2>
-                    {p.price && !options ? (
-                      <span className="shrink-0 font-display text-base text-leaf">{p.price}</span>
-                    ) : null}
-                  </div>
-                  {p.description ? (
-                    <p className="mt-2 text-sm text-muted-foreground">{p.description}</p>
+          {products.map((p) => (
+            <article
+              key={p.id}
+              className="overflow-hidden rounded-2xl border border-border bg-card shadow-[var(--shadow-soft)]"
+            >
+              <Link to="/shop/$slug" params={{ slug: p.slug }} className="block">
+                <img
+                  src={p.image_url}
+                  alt={p.name}
+                  loading="lazy"
+                  width={1200}
+                  height={912}
+                  className="h-56 w-full object-cover transition-transform duration-300 hover:scale-105"
+                />
+              </Link>
+              <div className="p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="text-xl">
+                    <Link to="/shop/$slug" params={{ slug: p.slug }} className="hover:underline">
+                      {p.name}
+                    </Link>
+                  </h2>
+                  {p.price ? (
+                    <span className="shrink-0 font-display text-base text-leaf">{p.price}</span>
                   ) : null}
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    {options
-                      ? `${options} option${options > 1 ? "s" : ""} — types, sizes, indoor & outdoor`
-                      : p.available
-                        ? "Available"
-                        : "Currently out of stock"}
-                  </p>
-                  <div className="mt-5 flex flex-wrap gap-3">
-                    {options ? (
-                      <Link
-                        to="/shop/$slug"
-                        params={{ slug: p.slug }}
-                        className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                      >
-                        View {options} options
-                      </Link>
-                    ) : (
-                      <>
-                        <Link
-                          to="/shop/$slug"
-                          params={{ slug: p.slug }}
-                          className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
-                        >
-                          View details
-                        </Link>
-                        <a
-                          href={whatsappLink(
-                            settings.whatsapp,
-                            `Hello G Modern Creativity, I would like to order: ${p.name}`,
-                          )}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          Make Your Order
-                        </a>
-                      </>
-                    )}
-                  </div>
                 </div>
-              </article>
-            );
-          })}
-
+                {p.description ? (
+                  <p className="mt-2 text-sm text-muted-foreground">{p.description}</p>
+                ) : null}
+                <p className="mt-3 text-xs text-muted-foreground">
+                  {p.available ? "Available" : "Currently out of stock"}
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  <Link
+                    to="/shop/$slug"
+                    params={{ slug: p.slug }}
+                    className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-medium transition-colors hover:bg-muted"
+                  >
+                    View details
+                  </Link>
+                  <a
+                    href={whatsappLink(
+                      settings.whatsapp,
+                      `Hello G Modern Creativity, I would like to order: ${p.name}`,
+                    )}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Make Your Order
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
 
         <div className="mt-14 rounded-2xl border border-border bg-muted/40 p-8">

@@ -29,60 +29,17 @@ export const servicesQuery = queryOptions({
 });
 
 export const productsQuery = queryOptions({
-  queryKey: ["products", "visible", "top"],
+  queryKey: ["products", "visible"],
   queryFn: async (): Promise<Product[]> => {
     const { data, error } = await supabase
       .from("products")
       .select("*")
       .eq("visible", true)
-      .is("parent_id", null)
       .order("position");
     if (error) throw error;
     return data ?? [];
   },
 });
-
-export const childProductsQuery = (parentId: string) =>
-  queryOptions({
-    queryKey: ["products", "children", parentId],
-    queryFn: async (): Promise<Product[]> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("visible", true)
-        .eq("parent_id", parentId)
-        .order("position");
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
-export const childCountsQuery = queryOptions({
-  queryKey: ["products", "child-counts"],
-  queryFn: async (): Promise<Record<string, number>> => {
-    const { data, error } = await supabase
-      .from("products")
-      .select("parent_id")
-      .eq("visible", true)
-      .not("parent_id", "is", null);
-    if (error) throw error;
-    const counts: Record<string, number> = {};
-    for (const row of data ?? []) {
-      if (row.parent_id) counts[row.parent_id] = (counts[row.parent_id] ?? 0) + 1;
-    }
-    return counts;
-  },
-});
-
-export const placementLabel = (placement: string) =>
-  placement === "indoor"
-    ? "Indoor"
-    : placement === "outdoor"
-      ? "Outdoor"
-      : placement === "both"
-        ? "Indoor & outdoor"
-        : "";
-
 
 export const allServicesQuery = queryOptions({
   queryKey: ["services", "all"],
@@ -142,20 +99,6 @@ export const productQuery = (slug: string) =>
         .select("*")
         .eq("slug", slug)
         .eq("visible", true)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-export const productByIdQuery = (id: string) =>
-  queryOptions({
-    queryKey: ["product-by-id", id],
-    queryFn: async (): Promise<Product | null> => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("id", id)
         .maybeSingle();
       if (error) throw error;
       return data;

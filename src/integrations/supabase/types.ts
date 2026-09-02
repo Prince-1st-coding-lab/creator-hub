@@ -23,13 +23,9 @@ export type Database = {
           gallery: string[]
           id: string
           image_url: string
-          material: string
           name: string
-          parent_id: string | null
-          placement: string
           position: number
           price: string
-          size: string
           slug: string
           updated_at: string
           visible: boolean
@@ -42,13 +38,9 @@ export type Database = {
           gallery?: string[]
           id?: string
           image_url?: string
-          material?: string
           name: string
-          parent_id?: string | null
-          placement?: string
           position?: number
           price?: string
-          size?: string
           slug?: string
           updated_at?: string
           visible?: boolean
@@ -61,26 +53,14 @@ export type Database = {
           gallery?: string[]
           id?: string
           image_url?: string
-          material?: string
           name?: string
-          parent_id?: string | null
-          placement?: string
           position?: number
           price?: string
-          size?: string
           slug?: string
           updated_at?: string
           visible?: boolean
         }
-        Relationships: [
-          {
-            foreignKeyName: "products_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "products"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       services: {
         Row: {
